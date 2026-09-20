@@ -1,0 +1,1274 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>Registro Assenze</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg:#f5f2ed;--bg2:#ede9e2;--bg3:#e0dbd1;
+      --ink:#1a1714;--ink2:#3d3830;--ink3:#6b6257;--border:#c8c0b4;
+      --cyan:#00aecc;--cyan-soft:#cdf0f8;
+      --magenta:#d4006a;--mag-soft:#fcd6ea;
+      --yellow:#f5c400;--yel-soft:#fef3c0;
+      --green:#2e9e5b;--green-soft:#c8f0d8;
+      --red:#d42b2b;--red-soft:#fdd8d8;
+      --orange:#e06000;--orange-soft:#fde8cc;
+      --shadow:rgba(26,23,20,0.12);--radius:10px;--radius-sm:6px;
+    }
+    @media(prefers-color-scheme:dark){:root{
+      --bg:#1a1714;--bg2:#242019;--bg3:#2e2a24;
+      --ink:#f0ece5;--ink2:#c8c0b4;--ink3:#8c8278;--border:#3d3830;
+      --cyan:#00d4f5;--cyan-soft:#003d4d;
+      --magenta:#ff4da6;--mag-soft:#4d0028;
+      --yellow:#ffd633;--yel-soft:#4d3d00;
+      --green:#3dc476;--green-soft:#0d3d22;
+      --red:#ff5555;--red-soft:#4d0d0d;
+      --orange:#ff8c00;--orange-soft:#4d2800;
+      --shadow:rgba(0,0,0,0.4);
+    }}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{font-size:16px}
+    body{font-family:'Space Grotesk',sans-serif;background:var(--bg);color:var(--ink);min-height:100dvh;overflow-x:hidden;line-height:1.5;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom);}
+    button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+    input,select{font-family:'Space Mono',monospace;color:var(--ink);background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:.5rem .75rem;font-size:1rem;outline:none;transition:border-color .2s;width:100%}
+    input:focus,select:focus{border-color:var(--cyan)}
+    label{font-size:.85rem;font-weight:600;color:var(--ink2);display:block;margin-bottom:.3rem}
+    .mono{font-family:'Space Mono',monospace}
+    .hidden{display:none!important}
+
+    /* ONBOARDING */
+    #onboarding{position:fixed;inset:0;background:var(--bg);z-index:1000;display:flex;align-items:center;justify-content:center;padding:1.5rem;padding-top:max(1.5rem,env(safe-area-inset-top));}
+    .ob-card{background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--radius);padding:2rem 1.75rem;width:100%;max-width:420px;box-shadow:0 8px 32px var(--shadow);animation:fadeInUp .25s ease}
+    .ob-header{display:flex;align-items:center;gap:.6rem;margin-bottom:1.75rem}
+    .ob-header h1{font-size:1.35rem;font-weight:700;letter-spacing:-.02em}
+    .ob-header .accent-bar{width:4px;height:28px;border-radius:2px;background:linear-gradient(180deg,var(--cyan) 0%,var(--magenta) 50%,var(--yellow) 100%);flex-shrink:0}
+    .ob-step{display:none}.ob-step.active{display:block}
+    .ob-step h2{font-size:1rem;font-weight:600;margin-bottom:1.25rem;color:var(--ink2)}
+    .ob-step h2 .step-num{display:inline-block;background:var(--cyan);color:#fff;border-radius:50%;width:22px;height:22px;font-size:.75rem;font-weight:700;text-align:center;line-height:22px;margin-right:.4rem}
+    .ob-btn{display:block;width:100%;padding:.7rem 1rem;border-radius:var(--radius-sm);font-size:1rem;font-weight:600;text-align:left;border:1.5px solid var(--border);background:var(--bg);color:var(--ink);margin-bottom:.5rem;transition:border-color .15s,background .15s}
+    .ob-btn:hover,.ob-btn.selected{border-color:var(--cyan);background:var(--cyan-soft)}
+    .ob-next{margin-top:1.25rem;width:100%;padding:.75rem;border-radius:var(--radius-sm);background:var(--cyan);color:#fff;font-size:1rem;font-weight:700;border:none;transition:opacity .2s}
+    .ob-next:disabled{opacity:.4;cursor:not-allowed}
+
+    /* APP */
+    #app{display:flex;flex-direction:column;min-height:100dvh;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom);padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right);}
+    #app-header{background:var(--bg2);border-bottom:1.5px solid var(--border);padding:.75rem 1rem;}
+    .header-top{display:flex;align-items:center;justify-content:space-between;gap:.75rem}
+    .header-identity{display:flex;align-items:center;gap:.5rem;min-width:0;flex:1}
+    .reg-marks{display:flex;gap:2px;flex-shrink:0}
+    .header-name{font-size:.82rem;font-weight:600;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .header-class{font-size:.72rem;color:var(--ink3);font-family:'Space Mono',monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .header-right{display:flex;flex-direction:column;align-items:flex-end;gap:.25rem;flex-shrink:0;min-width:0}
+    .made-by{font-size:.58rem;color:var(--ink3);font-family:'Space Mono',monospace;white-space:nowrap;line-height:1.2}
+    #btn-edit-profile{font-size:.68rem;font-weight:600;color:var(--cyan);padding:.25rem .6rem;border:1px solid var(--cyan);border-radius:20px;transition:background .15s;white-space:nowrap;margin-top:.1rem}
+    #btn-edit-profile:hover{background:var(--cyan-soft)}
+
+    /* STATS */
+    #stats-panel{background:var(--bg2);border-bottom:1.5px solid var(--border);padding:.9rem 1rem}
+    .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:.6rem .8rem;margin-bottom:.8rem}
+    .stat-item{background:var(--bg3);border-radius:var(--radius-sm);padding:.55rem .65rem}
+    .stat-label{font-size:.66rem;font-weight:600;color:var(--ink3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:.2rem}
+    .stat-value{font-family:'Space Mono',monospace;font-size:1.25rem;font-weight:700;line-height:1}
+    .stat-value.ok{color:var(--green)}.stat-value.warn{color:var(--yellow)}.stat-value.over{color:var(--red)}
+    .limit-row{display:flex;align-items:center;gap:.5rem}
+    .limit-row label{font-size:.72rem;margin:0;white-space:nowrap;flex-shrink:0}
+    .limit-row input{width:70px;padding:.3rem .5rem;font-size:.9rem;text-align:center}
+    .progress-bar-wrap{background:var(--bg3);border-radius:20px;height:8px;overflow:hidden}
+    .progress-bar-fill{height:100%;border-radius:20px;transition:width .4s ease,background-color .4s ease;background:var(--green)}
+    .progress-bar-fill.warn{background:var(--yellow)}.progress-bar-fill.over{background:var(--red)}
+
+    /* TABS */
+    #month-tabs-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;background:var(--bg2);border-bottom:1.5px solid var(--border)}
+    #month-tabs-wrap::-webkit-scrollbar{display:none}
+    #month-tabs{display:flex;padding:0 .5rem;gap:.15rem;min-width:max-content}
+    .month-tab{padding:.55rem .85rem;font-size:.78rem;font-weight:600;font-family:'Space Mono',monospace;color:var(--ink3);border-bottom:2.5px solid transparent;white-space:nowrap;transition:color .15s,border-color .15s}
+    .month-tab:hover{color:var(--ink)}.month-tab.active{color:var(--cyan);border-bottom-color:var(--cyan)}
+
+    /* CALENDARIO */
+    #calendar-wrap{padding:.75rem .6rem 0}
+    .cal-month-title{font-size:1rem;font-weight:700;margin-bottom:.6rem;display:flex;align-items:center;gap:.5rem;padding:0 .1rem}
+    .cal-month-title .dot{width:8px;height:8px;border-radius:50%;background:var(--magenta)}
+    .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+    .cal-dow{text-align:center;font-size:.62rem;font-weight:700;font-family:'Space Mono',monospace;color:var(--ink3);padding:.2rem 0;text-transform:uppercase}
+    .cal-day{aspect-ratio:1;border-radius:var(--radius-sm);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:.82rem;font-weight:500;position:relative;transition:transform .1s;min-height:38px}
+    .cal-day .day-num{font-family:'Space Mono',monospace;font-size:.78rem;line-height:1}
+    .cal-day .day-hours{font-size:.5rem;font-family:'Space Mono',monospace;line-height:1.1;margin-top:1px;text-align:center}
+    .cal-day.empty{background:transparent;pointer-events:none}
+    .cal-day.non-school{background:var(--bg3);color:var(--ink3);pointer-events:none}
+    .cal-day.non-school.clickable{pointer-events:auto;cursor:pointer;border:1.5px dashed var(--border)}
+    .cal-day.non-school.clickable:hover{border-color:var(--green);color:var(--ink)}
+    .cal-day.school{background:var(--bg2);border:1.5px solid var(--border);cursor:pointer}
+    .cal-day.school:active{transform:scale(.93)}.cal-day.school:hover{border-color:var(--cyan)}
+    .cal-day.today{border-color:var(--cyan)!important;box-shadow:0 0 0 1.5px var(--cyan)}
+    .cal-day.today .day-num{color:var(--cyan);font-weight:700}
+    .cal-day.day-past{background:var(--green-soft)!important;color:var(--green);}
+    .cal-day.day-past .day-hours{color:var(--green);opacity:.8}
+    /* stati calendario */
+    .cal-day.day-absent{background:var(--mag-soft);border-color:var(--magenta)!important}
+    .cal-day.day-modified{background:var(--yel-soft);border-color:var(--yellow)!important}
+    .cal-day.day-modified.has-school-mod{background:var(--cyan-soft);border-color:var(--cyan)!important}
+    .cal-day.day-removed{background:var(--bg3);border:1.5px dashed var(--border)!important;color:var(--ink3);pointer-events:auto;cursor:pointer}
+    .cal-day.day-added{background:var(--bg2);border:1.5px solid var(--border)!important;cursor:pointer}
+    .cal-day.day-assembly-present{background:var(--green-soft);border-color:var(--green)!important}
+    .cal-day.day-assembly-absent{background:var(--mag-soft);border-color:var(--magenta)!important}
+
+    /* MODAL */
+    #modal-overlay{position:fixed;inset:0;background:rgba(26,23,20,.55);z-index:500;display:flex;align-items:flex-end;justify-content:center}
+    @media(prefers-color-scheme:dark){#modal-overlay{background:rgba(0,0,0,.7)}}
+    .modal-sheet{background:var(--bg2);border-radius:var(--radius) var(--radius) 0 0;width:100%;max-width:520px;padding:1rem 1.25rem 2rem;box-shadow:0 -8px 32px var(--shadow);max-height:90dvh;overflow-y:auto;animation:fadeInUp .22s ease}
+    .modal-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 1rem}
+    .modal-title{font-size:1rem;font-weight:700;margin-bottom:.25rem}
+    .modal-subtitle{font-size:.78rem;color:var(--ink3);font-family:'Space Mono',monospace;margin-bottom:1rem}
+    .modal-options{display:flex;flex-direction:column;gap:.5rem}
+    .modal-option{display:flex;align-items:center;gap:.75rem;padding:.65rem .85rem;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--bg);font-size:.88rem;font-weight:500;cursor:pointer;transition:border-color .15s,background .15s;text-align:left;width:100%}
+    .modal-option:hover{border-color:var(--cyan);background:var(--cyan-soft)}
+    .opt-icon{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0}
+    .opt-icon.cyan{background:var(--cyan-soft);color:var(--cyan)}
+    .opt-icon.magenta{background:var(--mag-soft);color:var(--magenta)}
+    .opt-icon.yellow{background:var(--yel-soft);color:var(--yellow)}
+    .opt-icon.green{background:var(--green-soft);color:var(--green)}
+    .opt-icon.gray{background:var(--bg3);color:var(--ink3)}
+    .opt-icon.orange{background:var(--orange-soft);color:var(--orange)}
+    .modal-option .opt-desc{font-size:.7rem;color:var(--ink3);margin-top:.1rem}
+    .modal-option .opt-text{flex:1}
+    .modal-option.danger{border-color:var(--red)}.modal-option.danger:hover{background:var(--red-soft)}
+    .modal-back{display:flex;align-items:center;gap:.5rem;font-size:.9rem;font-weight:700;color:var(--ink2);padding:.6rem .85rem;margin-bottom:.75rem;cursor:pointer;background:var(--bg3);border-radius:var(--radius-sm);border:1.5px solid var(--border);transition:background .15s;}
+    .modal-back:hover{background:var(--cyan-soft);border-color:var(--cyan);color:var(--cyan)}
+
+    /* Riepilogo ore nel modal */
+    .hours-summary{background:var(--bg3);border-radius:var(--radius-sm);padding:.7rem .9rem;margin-bottom:.9rem;font-family:'Space Mono',monospace;font-size:.75rem}
+    .hours-summary .hs-row{display:flex;justify-content:space-between;align-items:center;padding:.2rem 0}
+    .hours-summary .hs-row+.hs-row{border-top:1px solid var(--border);margin-top:.2rem;padding-top:.4rem}
+    .hs-label{color:var(--ink3)}
+    .hs-val{font-weight:700}
+    .hs-val.absent{color:var(--magenta)}
+    .hs-val.ok{color:var(--green)}
+
+    /* Blocchi sezione modal */
+    .modal-section{background:var(--bg3);border-radius:var(--radius-sm);padding:.75rem .85rem;margin-bottom:.6rem}
+    .modal-section-title{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--ink3);margin-bottom:.55rem}
+
+    /* Stepper */
+    .hour-stepper{display:flex;align-items:center;gap:.75rem;justify-content:center;margin:.5rem 0}
+    .hour-stepper button{width:38px;height:38px;border-radius:50%;background:var(--bg2);border:1.5px solid var(--border);font-size:1.3rem;font-weight:700;color:var(--ink);display:flex;align-items:center;justify-content:center;transition:background .15s}
+    .hour-stepper button:hover{background:var(--cyan-soft);border-color:var(--cyan)}
+    .hour-stepper button:disabled{opacity:.3;cursor:not-allowed}
+    .hour-val{font-family:'Space Mono',monospace;font-size:1.6rem;font-weight:700;min-width:2.5ch;text-align:center}
+    .hour-label{font-size:.72rem;color:var(--ink3);text-align:center;margin-top:.2rem}
+
+    /* Checkbox toggle */
+    .check-row{display:flex;align-items:center;gap:.65rem;padding:.6rem .75rem;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--bg);cursor:pointer;transition:border-color .15s,background .15s;margin-top:.5rem}
+    .check-row.active{border-color:var(--magenta);background:var(--mag-soft)}
+    .check-box{width:20px;height:20px;border-radius:4px;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:.8rem;flex-shrink:0;transition:all .15s;background:var(--bg2)}
+    .check-row.active .check-box{background:var(--magenta);border-color:var(--magenta);color:#fff}
+    .check-row .check-label{font-size:.85rem;font-weight:600}
+    .check-row .check-desc{font-size:.7rem;color:var(--ink3);margin-top:.05rem}
+
+    /* Confirm button */
+    .modal-confirm{width:100%;padding:.72rem;border-radius:var(--radius-sm);background:var(--cyan);color:#fff;font-size:.95rem;font-weight:700;border:none;margin-top:.75rem;transition:opacity .2s}
+    .modal-confirm:disabled{opacity:.4}
+
+    /* LOG */
+    #log-section{padding:1rem;margin-top:.25rem}
+    .log-title{font-size:.85rem;font-weight:700;color:var(--ink2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.75rem;display:flex;align-items:center;gap:.5rem}
+    .log-title::before{content:'';width:3px;height:14px;background:var(--magenta);border-radius:2px;display:inline-block}
+    .log-empty{font-size:.82rem;color:var(--ink3);font-style:italic;text-align:center;padding:1.5rem 0}
+    .log-item{display:flex;align-items:center;gap:.6rem;padding:.6rem .7rem;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--bg2);margin-bottom:.45rem}
+    .log-item .log-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+    .log-item .log-date{font-family:'Space Mono',monospace;font-size:.72rem;color:var(--ink3);flex-shrink:0;min-width:5.5ch}
+    .log-item .log-body{flex:1;min-width:0}
+    .log-item .log-type{font-size:.82rem;font-weight:600}
+    .log-item .log-hours{font-family:'Space Mono',monospace;font-size:.7rem;color:var(--ink3)}
+    .log-item .log-del{font-size:1.1rem;color:var(--ink3);padding:.2rem .35rem;border-radius:4px;flex-shrink:0;transition:color .15s,background .15s}
+    .log-item .log-del:hover{color:var(--red);background:var(--red-soft)}
+    .footer-spacer{height:max(2rem, env(safe-area-inset-bottom))}
+
+    @media(min-width:480px){.cal-day{min-height:46px}.cal-day .day-num{font-size:.88rem}}
+    @media(min-width:600px){
+      #app-header,#stats-panel,#month-tabs-wrap,#calendar-wrap,#log-section{max-width:600px;margin-left:auto;margin-right:auto}
+      #app-header,#stats-panel{border-left:1.5px solid var(--border);border-right:1.5px solid var(--border)}
+    }
+    @keyframes fadeInUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+  </style>
+</head>
+<body>
+
+<!-- ONBOARDING -->
+<div id="onboarding">
+  <div class="ob-card">
+    <div class="ob-header">
+      <div class="accent-bar"></div>
+      <div>
+        <h1>Registro Assenze</h1>
+        <div style="font-size:.75rem;color:var(--ink3);font-family:'Space Mono',monospace;">a.s. 2026/2027</div>
+      </div>
+      <div style="margin-left:auto;display:flex;gap:6px;opacity:.35;">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="6" stroke="#00aecc" stroke-width="1.2"/><line x1="9" y1="0" x2="9" y2="18" stroke="#00aecc" stroke-width="1"/><line x1="0" y1="9" x2="18" y2="9" stroke="#00aecc" stroke-width="1"/></svg>
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="6" stroke="#d4006a" stroke-width="1.2"/><line x1="9" y1="0" x2="9" y2="18" stroke="#d4006a" stroke-width="1"/><line x1="0" y1="9" x2="18" y2="9" stroke="#d4006a" stroke-width="1"/></svg>
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="6" stroke="#f5c400" stroke-width="1.2"/><line x1="9" y1="0" x2="9" y2="18" stroke="#f5c400" stroke-width="1"/><line x1="0" y1="9" x2="18" y2="9" stroke="#f5c400" stroke-width="1"/></svg>
+      </div>
+    </div>
+    <div class="ob-step active" id="ob-step-1">
+      <h2><span class="step-num">1</span>Come ti chiami?</h2>
+      <div style="margin-bottom:1rem;"><label for="ob-name">Nome e Cognome</label><input type="text" id="ob-name" placeholder="es. Mario Rossi" autocomplete="name"/></div>
+      <button class="ob-next" id="ob-next-1" disabled>Avanti →</button>
+      <div style="margin-top:1.25rem;text-align:center;font-size:.68rem;color:var(--ink3);font-family:'Space Mono',monospace;">Developed by Mattia Moscuzza</div>
+    </div>
+    <div class="ob-step" id="ob-step-2">
+      <h2><span class="step-num">2</span>Che anno frequenti?</h2>
+      <div id="ob-anni">
+        <button class="ob-btn" data-anno="1">1º Anno</button><button class="ob-btn" data-anno="2">2º Anno</button>
+        <button class="ob-btn" data-anno="3">3º Anno</button><button class="ob-btn" data-anno="4">4º Anno</button>
+        <button class="ob-btn" data-anno="5">5º Anno</button>
+      </div>
+      <button class="ob-next" id="ob-next-2" disabled>Avanti →</button>
+      <button class="ob-back" id="ob-back-2" style="margin-top:.6rem;width:100%;padding:.6rem;border-radius:var(--radius-sm);background:var(--bg3);border:1.5px solid var(--border);font-size:.9rem;font-weight:600;color:var(--ink2);cursor:pointer;">← Torna al nome</button>
+      <div style="margin-top:1.25rem;text-align:center;font-size:.68rem;color:var(--ink3);font-family:'Space Mono',monospace;">Developed by Mattia Moscuzza</div>
+    </div>
+    <div class="ob-step" id="ob-step-3">
+      <h2><span class="step-num">3</span>Qual è il tuo indirizzo?</h2>
+      <div id="ob-indirizzi">
+        <button class="ob-btn" data-ind="altro">Qualunque altro indirizzo</button>
+        <button class="ob-btn" data-ind="grafica">Grafica e Comunicazione</button>
+      </div>
+      <button class="ob-next" id="ob-next-3" disabled>Inizia →</button>
+      <button class="ob-back" id="ob-back-3" style="margin-top:.6rem;width:100%;padding:.6rem;border-radius:var(--radius-sm);background:var(--bg3);border:1.5px solid var(--border);font-size:.9rem;font-weight:600;color:var(--ink2);cursor:pointer;">← Torna all'anno</button>
+      <div style="margin-top:1.25rem;text-align:center;font-size:.68rem;color:var(--ink3);font-family:'Space Mono',monospace;">Developed by Mattia Moscuzza</div>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app" class="hidden">
+  <header id="app-header">
+    <div class="made-by" style="text-align:right;margin-bottom:.35rem;">Developed by Mattia Moscuzza 4ª AG</div>
+    <div class="header-top">
+      <div class="header-identity">
+        <div class="reg-marks">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="5" stroke="var(--cyan)" stroke-width="1"/><line x1="8" y1="1" x2="8" y2="15" stroke="var(--cyan)" stroke-width=".8"/><line x1="1" y1="8" x2="15" y2="8" stroke="var(--cyan)" stroke-width=".8"/></svg>
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="5" stroke="var(--magenta)" stroke-width="1"/><line x1="8" y1="1" x2="8" y2="15" stroke="var(--magenta)" stroke-width=".8"/><line x1="1" y1="8" x2="15" y2="8" stroke="var(--magenta)" stroke-width=".8"/></svg>
+        </div>
+        <div><div class="header-name" id="hdr-name">—</div><div class="header-class" id="hdr-class">—</div></div>
+      </div>
+      <button id="btn-edit-profile">✎ Modifica profilo</button>
+    </div>
+  </header>
+
+  <section id="stats-panel">
+    <div class="stats-grid">
+      <div class="stat-item"><div class="stat-label">Ore previste</div><div class="stat-value mono" id="stat-total">—</div></div>
+      <div class="stat-item"><div class="stat-label">Accumulate</div><div class="stat-value mono ok" id="stat-used">0</div></div>
+      <div class="stat-item">
+        <div class="stat-label">Limite</div>
+        <div class="limit-row">
+          <input type="number" id="limit-input" min="0" max="9999" value="264" style="width:70px;padding:.3rem .5rem;font-size:.9rem;text-align:center;"/>
+          <span style="font-size:.72rem;color:var(--ink3);">ore</span>
+        </div>
+        <div style="font-size:.6rem;color:var(--ink3);margin-top:.3rem;line-height:1.3;">⚠ Assicurati in segreteria il massimo monte ore di assenza</div>
+      </div>
+      <div class="stat-item"><div class="stat-label">Rimanenti</div><div class="stat-value mono ok" id="stat-remaining">264</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem .8rem;margin-bottom:.8rem;">
+      <div class="stat-item" style="grid-column:1/3;">
+        <div class="stat-label">Giorni scolastici al termine</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:.5rem;">
+          <div>
+            <div style="display:flex;align-items:baseline;gap:.4rem;">
+              <div class="stat-value mono" id="stat-days-left" style="font-size:1.6rem;">—</div>
+              <div style="font-size:.72rem;color:var(--ink3);font-family:'Space Mono',monospace;" id="stat-end-date">fine 10 giu 2027</div>
+            </div>
+          </div>
+          <svg id="days-ring" width="52" height="52" viewBox="0 0 52 52" style="flex-shrink:0;">
+            <circle cx="26" cy="26" r="22" fill="none" stroke="var(--bg3)" stroke-width="5"/>
+            <circle id="days-ring-fill" cx="26" cy="26" r="22" fill="none" stroke="var(--cyan)" stroke-width="5"
+              stroke-dasharray="138.2" stroke-dashoffset="138.2"
+              stroke-linecap="round"
+              transform="rotate(-90 26 26)"/>
+            <text id="days-ring-pct" x="26" y="30" text-anchor="middle"
+              font-family="Space Mono,monospace" font-size="10" font-weight="700"
+              fill="var(--ink2)">0%</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-bar" style="width:0%"></div></div>
+  </section>
+
+  <div id="month-tabs-wrap"><div id="month-tabs"></div></div>
+  <div id="calendar-wrap">
+    <div class="cal-month-title"><div class="dot"></div><span id="cal-month-label"></span></div>
+    <div class="cal-grid" id="cal-grid"></div>
+  </div>
+  <section id="log-section"><div class="log-title">Registro modifiche</div><div id="log-list"></div></section>
+  <div class="footer-spacer"></div>
+</div>
+
+<div id="modal-overlay" class="hidden" role="dialog" aria-modal="true">
+  <div class="modal-sheet"><div class="modal-handle"></div><div id="modal-content"></div></div>
+</div>
+
+<script>
+// ================================================================
+//  COSTANTI
+// ================================================================
+const MONTHS=['Settembre','Ottobre','Novembre','Dicembre','Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno'];
+const MONTH_INDICES=[{y:2026,m:8},{y:2026,m:9},{y:2026,m:10},{y:2026,m:11},{y:2027,m:0},{y:2027,m:1},{y:2027,m:2},{y:2027,m:3},{y:2027,m:4},{y:2027,m:5}];
+const DOW_LABELS=['Lun','Mar','Mer','Gio','Ven','Sab','Dom'];
+const END_DATE=new Date(2027,5,10);
+const CAL_START=new Date(2026,8,1);
+const START_DATES={1:new Date(2026,8,14),2:new Date(2026,8,15),3:new Date(2026,8,16),4:new Date(2026,8,17),5:new Date(2026,8,18)};
+const VACANZE_RANGES=[['2026-11-02','2026-11-02'],['2026-12-07','2026-12-08'],['2026-12-23','2027-01-10'],['2027-03-25','2027-03-30'],['2027-06-02','2027-06-02']];
+
+// ================================================================
+//  UTILS
+// ================================================================
+const dateKey=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const parseKey=k=>{const[y,m,d]=k.split('-').map(Number);return new Date(y,m-1,d);};
+const addDays=(d,n)=>{const r=new Date(d);r.setDate(r.getDate()+n);return r;};
+const sameDay=(a,b)=>a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate();
+const dow=d=>(d.getDay()+6)%7;
+const cap=s=>s.charAt(0).toUpperCase()+s.slice(1);
+const clamp=(v,mn,mx)=>Math.max(mn,Math.min(mx,v));
+
+function buildVacanzeSet(){const s=new Set();for(const[fr,to]of VACANZE_RANGES){let c=parseKey(fr),e=parseKey(to);while(c<=e){s.add(dateKey(c));c=addDays(c,1);}}return s;}
+const VACANZE_SET=buildVacanzeSet();
+
+function getTodayRome(){const p={};for(const x of new Intl.DateTimeFormat('it-IT',{timeZone:'Europe/Rome',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date()))p[x.type]=x.value;return new Date(Number(p.year),Number(p.month)-1,Number(p.day));}
+
+// ================================================================
+//  ORE PER GIORNO (base)
+// ================================================================
+function getHoursForDay(dateObj,anno,indirizzo){
+  if(!isBaseSchoolDay(dateObj,anno))return 0;
+  const d=dow(dateObj),start=START_DATES[anno];
+  if(dateObj>=start&&dateObj<=new Date(2026,8,18))return 3;
+  const p2s=new Date(2026,8,21),p2e=new Date(2026,8,25),p3s=new Date(2026,8,28),p3e=new Date(2026,9,2);
+  if((dateObj>=p2s&&dateObj<=p2e)||(dateObj>=p3s&&dateObj<=p3e))return 4;
+  if(d<=2)return 7;if(d===3)return 6;
+  if(anno===1&&indirizzo==='grafica')return 6;
+  return 5;
+}
+function isBaseSchoolDay(dateObj,anno){
+  const start=START_DATES[anno];
+  if(!start||dateObj<start||dateObj>END_DATE)return false;
+  if(dow(dateObj)>=5)return false;
+  if(VACANZE_SET.has(dateKey(dateObj)))return false;
+  return true;
+}
+function isSchoolDay(dateObj,anno,dataMap){
+  const k=dateKey(dateObj),entry=dataMap&&dataMap[k];
+  if(entry&&entry.type==='added')return true;
+  if(entry&&entry.type==='removed')return false;
+  return isBaseSchoolDay(dateObj,anno);
+}
+function getEffectiveHours(dateObj,anno,indirizzo,dataMap){
+  const k=dateKey(dateObj),entry=dataMap&&dataMap[k];
+  if(entry&&entry.type==='added')return entry.hours||0;
+  if(entry&&entry.type==='day'&&entry.customTotalH)return entry.customTotalH;
+  return getHoursForDay(dateObj,anno,indirizzo);
+}
+
+// ================================================================
+//  CALCOLO ORE ASSENZA DA ENTRY
+//
+//  Struttura entry per giorno scolastico normale:
+//  {
+//    type: 'day',
+//    lateSchool:    N,   // ore entrata posticipata SCUOLA (non contano come assenza)
+//    earlySchool:   N,   // ore uscita anticipata SCUOLA (non contano come assenza)
+//    latePersonal:  N,   // ore entrata posticipata PERSONALE (contano come assenza)
+//    earlyPersonal: N,   // ore uscita anticipata PERSONALE (contano come assenza)
+//    absentRemaining: bool, // assente nelle ore "nette" rimaste dopo entrata/uscita scuola
+//  }
+//  Ore nette = totale - lateSchool - earlySchool
+//  Ore assenza = latePersonal + earlyPersonal + (absentRemaining ? oreNette : 0)
+//
+//  Tipi speciali: 'removed','added','assembly-present','assembly-absent'
+// ================================================================
+function computeAbsence(entry, totalHours){
+  if(!entry||entry.type==='removed')return 0;
+  if(entry.type==='added'){
+    if(entry.dayMods){
+      const dm=entry.dayMods;
+      const ls=dm.lateSchool||0,es=dm.earlySchool||0,lp=dm.latePersonal||0,ep=dm.earlyPersonal||0;
+      const nette=Math.max(0,(entry.hours||totalHours)-ls-es);
+      return lp+ep+(dm.absentRemaining?nette:0);
+    }
+    return entry.absentHours||0;
+  }
+  if(entry.type==='assembly-present')return 0;
+  if(entry.type==='assembly-absent')return 3;
+  if(entry.type==='day'){
+    const ls=entry.lateSchool||0, es=entry.earlySchool||0;
+    const lp=entry.latePersonal||0, ep=entry.earlyPersonal||0;
+    const lsAbs=entry.lateSchoolAsAbsent?ls:0;
+    const esAbs=entry.earlySchoolAsAbsent?es:0;
+    const nette=Math.max(0,totalHours-ls-es);
+    return lp+ep+lsAbs+esAbs+(entry.absentRemaining?nette:0);
+  }
+  return entry.hours||0;
+}
+
+// ================================================================
+//  STORAGE
+// ================================================================
+const LS_PROFILE='ra_profile',LS_DATA='ra_data2',LS_LIMIT='ra_limit';
+const loadProfile=()=>{try{return JSON.parse(localStorage.getItem(LS_PROFILE)||'null')}catch{return null}};
+const saveProfile=p=>{try{localStorage.setItem(LS_PROFILE,JSON.stringify(p))}catch{}};
+const loadData=()=>{try{return JSON.parse(localStorage.getItem(LS_DATA)||'{}')}catch{return{}}};
+const saveData=d=>{try{localStorage.setItem(LS_DATA,JSON.stringify(d))}catch{}};
+const loadLimit=()=>{try{const v=localStorage.getItem(LS_LIMIT);return v!==null?Number(v):264}catch{return 264}};
+const saveLimit=v=>{try{localStorage.setItem(LS_LIMIT,String(v))}catch{}};
+
+// ================================================================
+//  STATISTICHE
+// ================================================================
+function computeStats(profile,data){
+  const anno=profile.anno,ind=profile.indirizzo||'altro';
+  let totalHours=0,absentHours=0;
+  let cur=new Date(START_DATES[anno]);
+  while(cur<=END_DATE){
+    const k=dateKey(cur),entry=data[k];
+    if(isBaseSchoolDay(cur,anno)){
+      if(!entry){
+        totalHours+=getHoursForDay(cur,anno,ind);
+      }else if(entry.type==='removed'){
+        // niente
+      }else if(entry.type==='assembly-present'){
+        totalHours+=3;
+      }else if(entry.type==='assembly-absent'){
+        totalHours+=3;absentHours+=3;
+      }else{
+        const h=getHoursForDay(cur,anno,ind);
+        totalHours+=h;
+        absentHours+=computeAbsence(entry,h);
+      }
+    }
+    cur=addDays(cur,1);
+  }
+  // giorni aggiunti manualmente
+  for(const[k,entry]of Object.entries(data)){
+    if(entry.type==='added'){
+      const d=parseKey(k);
+      if(!isBaseSchoolDay(d,anno)){
+        totalHours+=(entry.hours||0);
+        absentHours+=computeAbsence(entry,entry.hours||0);
+      }
+    }
+  }
+  // Calcola minuti totali dai ritardi registrati
+  let totalMinutes=0;
+  for(const[k,entry]of Object.entries(data)){
+    if(entry&&(entry.type==='day'||entry.type==='added')){
+      totalMinutes+=entry.delayMinutes||0;
+      if(entry.lateSchoolAsAbsent) totalMinutes+=entry.lateSchoolMinutes||0;
+      if(entry.earlySchoolAsAbsent) totalMinutes+=entry.earlySchoolMinutes||0;
+    }
+  }
+  const extraHours=Math.floor(totalMinutes/60);
+  const remainingMinutes=totalMinutes%60;
+  return{totalHours,absentHours:absentHours+extraHours,absentMinutes:remainingMinutes};
+}
+
+// ================================================================
+//  STATO APP
+// ================================================================
+let profile=null,data={},limitHours=264,currentMonthIdx=0;
+
+// ================================================================
+//  ONBOARDING
+// ================================================================
+let obAnno=null,obInd=null;
+function initOnboarding(){
+  const ni=document.getElementById('ob-name'),n1=document.getElementById('ob-next-1');
+  ni.addEventListener('input',()=>{n1.disabled=ni.value.trim().length<2;});
+  n1.addEventListener('click',()=>showObStep(2));
+  document.querySelectorAll('#ob-anni .ob-btn').forEach(btn=>{
+    btn.addEventListener('click',()=>{document.querySelectorAll('#ob-anni .ob-btn').forEach(b=>b.classList.remove('selected'));btn.classList.add('selected');obAnno=Number(btn.dataset.anno);document.getElementById('ob-next-2').disabled=false;});
+  });
+  document.getElementById('ob-next-2').addEventListener('click',()=>{if(obAnno===1)showObStep(3);else{obInd='altro';finalizeOnboarding();}});
+  document.querySelectorAll('#ob-indirizzi .ob-btn').forEach(btn=>{
+    btn.addEventListener('click',()=>{document.querySelectorAll('#ob-indirizzi .ob-btn').forEach(b=>b.classList.remove('selected'));btn.classList.add('selected');obInd=btn.dataset.ind;document.getElementById('ob-next-3').disabled=false;});
+  });
+  document.getElementById('ob-next-3').addEventListener('click',finalizeOnboarding);
+  document.getElementById('ob-back-2').addEventListener('click',()=>showObStep(1));
+  document.getElementById('ob-back-3').addEventListener('click',()=>showObStep(2));
+}
+function showObStep(n){document.querySelectorAll('.ob-step').forEach(s=>s.classList.remove('active'));document.getElementById(`ob-step-${n}`).classList.add('active');}
+function finalizeOnboarding(){
+  profile={name:document.getElementById('ob-name').value.trim(),anno:obAnno,indirizzo:obInd||'altro'};
+  saveProfile(profile);document.getElementById('onboarding').classList.add('hidden');startApp();
+}
+
+// ================================================================
+//  AVVIO
+// ================================================================
+function startApp(){
+  document.getElementById('app').classList.remove('hidden');
+  data=loadData();limitHours=loadLimit();
+  updateHeader();updateStats();buildMonthTabs();
+  const today=getTodayRome();let bestIdx=0;
+  for(let i=0;i<MONTH_INDICES.length;i++){
+    const mi=MONTH_INDICES[i];
+    if(today.getFullYear()===mi.y&&today.getMonth()===mi.m){bestIdx=i;break;}
+    if(today>new Date(mi.y,mi.m+1,0))bestIdx=Math.min(i+1,MONTH_INDICES.length-1);
+  }
+  currentMonthIdx=bestIdx;setActiveMonth(currentMonthIdx);
+  const li=document.getElementById('limit-input');
+  li.value=limitHours;
+  li.addEventListener('change',()=>{const v=parseInt(li.value,10);if(!isNaN(v)&&v>=0){limitHours=v;saveLimit(v);updateStats();}});
+  document.getElementById('btn-edit-profile').addEventListener('click',openEditProfile);
+  document.getElementById('modal-overlay').addEventListener('click',e=>{if(e.target===document.getElementById('modal-overlay'))closeModal();});
+  renderLog();
+}
+function openEditProfile(){
+  document.getElementById('ob-name').value=profile.name||'';
+  document.getElementById('ob-next-1').disabled=(profile.name||'').trim().length<2;
+  obAnno=profile.anno;obInd=profile.indirizzo;
+  document.querySelectorAll('#ob-anni .ob-btn').forEach(b=>b.classList.toggle('selected',Number(b.dataset.anno)===obAnno));
+  document.getElementById('ob-next-2').disabled=false;
+  document.querySelectorAll('#ob-indirizzi .ob-btn').forEach(b=>b.classList.toggle('selected',b.dataset.ind===obInd));
+  document.getElementById('ob-next-3').disabled=!obInd;
+  showObStep(1);document.getElementById('app').classList.add('hidden');document.getElementById('onboarding').classList.remove('hidden');
+}
+function updateHeader(){
+  document.getElementById('hdr-name').textContent=profile.name||'—';
+  let cls=`${profile.anno}º Anno`;
+  if(profile.anno===1&&profile.indirizzo==='grafica')cls+=' — Grafica e Comunicazione';
+  else if(profile.anno===1)cls+=' — Altro indirizzo';
+  document.getElementById('hdr-class').textContent=cls;
+}
+function updateStats(){
+  if(!profile)return;
+  const{totalHours,absentHours,absentMinutes}=computeStats(profile,data);
+  const remaining=limitHours-absentHours;
+  const pct=limitHours>0?Math.min(100,(absentHours/limitHours)*100):0;
+  document.getElementById('stat-total').textContent=totalHours;
+  // Ore + minuti nelle accumulate
+  const usedEl=document.getElementById('stat-used');
+  if(absentMinutes>0){usedEl.textContent=`${absentHours}h ${absentMinutes}m`;usedEl.style.fontSize='.95rem';}
+  else{usedEl.textContent=absentHours;usedEl.style.fontSize='1.25rem';}
+  document.getElementById('stat-remaining').textContent=remaining;
+  const cls=pct>=100?'over':pct>=75?'warn':'ok';
+  usedEl.className=`stat-value mono ${cls}`;
+  document.getElementById('stat-remaining').className=`stat-value mono ${remaining<0?'over':cls}`;
+  const bar=document.getElementById('progress-bar');bar.style.width=pct+'%';
+  bar.className=`progress-bar-fill ${pct>=100?'over':pct>=75?'warn':''}`;
+
+  // Counter giorni scolastici rimanenti (fuso orario Rome)
+  const today=getTodayRome();
+  const anno=profile.anno;
+  let daysLeft=0;
+  if(today<=END_DATE){
+    let cur=addDays(today,1); // parte da domani
+    while(cur<=END_DATE){
+      if(isBaseSchoolDay(cur,anno)){
+        const e=data[dateKey(cur)];
+        if(!e||e.type!=='removed') daysLeft++;
+      }
+      cur=addDays(cur,1);
+    }
+  }
+  const daysEl=document.getElementById('stat-days-left');
+  const endLbl=document.getElementById('stat-end-date');
+  // Calcola giorni totali dell'anno scolastico per il cerchio
+  let totalSchoolDays=0;
+  {
+    let c=new Date(START_DATES[anno]);
+    while(c<=END_DATE){if(isBaseSchoolDay(c,anno))totalSchoolDays++;c=addDays(c,1);}
+  }
+  const daysPassed=totalSchoolDays-daysLeft;
+  const pctPassed=totalSchoolDays>0?Math.round((daysPassed/totalSchoolDays)*100):0;
+  // Aggiorna cerchio SVG (circonferenza r=22 → 2π*22 ≈ 138.2)
+  const circ=138.2;
+  const ringFill=document.getElementById('days-ring-fill');
+  const ringPct=document.getElementById('days-ring-pct');
+  if(ringFill){
+    const offset=circ-(circ*pctPassed/100);
+    ringFill.setAttribute('stroke-dashoffset',offset.toFixed(1));
+    // Colore: verde→giallo→rosso man mano che l'anno finisce
+    const stroke=pctPassed>=90?'var(--red)':pctPassed>=70?'var(--yellow)':'var(--cyan)';
+    ringFill.setAttribute('stroke',stroke);
+  }
+  if(ringPct) ringPct.textContent=pctPassed+'%';
+
+  if(today>END_DATE){
+    daysEl.textContent='0';daysEl.className='stat-value mono ok';endLbl.textContent='Anno terminato';
+  }else if(sameDay(today,END_DATE)){
+    daysEl.textContent='Oggi!';daysEl.className='stat-value mono ok';endLbl.textContent='È l\'ultimo giorno';
+  }else{
+    daysEl.textContent=daysLeft;
+    daysEl.className=`stat-value mono ${daysLeft<=10?'over':daysLeft<=30?'warn':'ok'}`;
+    endLbl.textContent='giorni al 10 giu 2027';
+  }
+}
+function buildMonthTabs(){
+  const wrap=document.getElementById('month-tabs');wrap.innerHTML='';
+  MONTHS.forEach((m,i)=>{const btn=document.createElement('button');btn.className='month-tab';btn.textContent=m.substring(0,3).toUpperCase();btn.setAttribute('aria-label',m);btn.addEventListener('click',()=>setActiveMonth(i));wrap.appendChild(btn);});
+}
+function setActiveMonth(idx){
+  currentMonthIdx=idx;
+  document.querySelectorAll('.month-tab').forEach((t,i)=>t.classList.toggle('active',i===idx));
+  const tabs=document.querySelectorAll('.month-tab');if(tabs[idx])tabs[idx].scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
+  renderCalendar(idx);document.getElementById('cal-month-label').textContent=MONTHS[idx]+' '+MONTH_INDICES[idx].y;
+}
+
+// ================================================================
+//  CALENDARIO
+// ================================================================
+function renderCalendar(monthIdx){
+  const{y,m}=MONTH_INDICES[monthIdx];
+  const grid=document.getElementById('cal-grid');grid.innerHTML='';
+  DOW_LABELS.forEach(d=>{const el=document.createElement('div');el.className='cal-dow';el.textContent=d;grid.appendChild(el);});
+  const firstDay=new Date(y,m,1),lastDay=new Date(y,m+1,0),today=getTodayRome();
+  for(let i=0;i<dow(firstDay);i++){const el=document.createElement('div');el.className='cal-day empty';grid.appendChild(el);}
+  for(let d=1;d<=lastDay.getDate();d++){
+    const dateObj=new Date(y,m,d),k=dateKey(dateObj),entry=data[k];
+    const isToday=sameDay(dateObj,today),isWeekend=dow(dateObj)>=5;
+    const inRange=dateObj>=CAL_START&&dateObj<=END_DATE;
+    const schoolDay=isSchoolDay(dateObj,profile.anno,data);
+    const el=document.createElement('div');el.className='cal-day';
+    const numEl=document.createElement('div');numEl.className='day-num';numEl.textContent=d;el.appendChild(numEl);
+
+    if(entry&&entry.type==='added'){
+      // Giorno reso scolastico: aspetto identico a un giorno scolastico normale
+      el.classList.add('school','day-added');
+      // Mostra badge modifiche se presenti, altrimenti solo le ore
+      if(entry.dayMods){
+        const absH=computeAbsence({type:'day',...entry.dayMods},entry.hours||0);
+        const dm=entry.dayMods;
+        const hasAbsence=absH>0;
+        const hasSchool=(dm.lateSchool||0)>0||(dm.earlySchool||0)>0;
+        if(hasAbsence) el.classList.add('day-absent');
+        else if(hasSchool) el.classList.add('day-modified','has-school-mod');
+        const parts=[];
+        if(dm.lateSchool)parts.push(`↑${dm.lateSchool}S`);
+        if(dm.earlySchool)parts.push(`↓${dm.earlySchool}S`);
+        if(dm.latePersonal)parts.push(`↑${dm.latePersonal}P`);
+        if(dm.earlyPersonal)parts.push(`↓${dm.earlyPersonal}P`);
+        if(dm.absentRemaining)parts.push('✕');
+        if(absH>0)parts.push(`${absH}h`);
+        if(parts.length>0)addDayBadge(el,parts.join(' '),hasAbsence?'var(--magenta)':hasSchool?'var(--cyan)':'var(--yellow)');
+        else{const hEl=document.createElement('div');hEl.className='day-hours';hEl.textContent=(entry.hours||0)+'h';el.appendChild(hEl);}
+      }else{
+        const hEl=document.createElement('div');hEl.className='day-hours';hEl.textContent=(entry.hours||0)+'h';el.appendChild(hEl);
+      }
+      if(isToday)el.classList.add('today');
+      el.addEventListener('click',()=>openDayModal(dateObj,k,entry,true));
+    }else if(!inRange||isWeekend){
+      el.classList.add('non-school');
+    }else if(!schoolDay){
+      if(!isWeekend&&inRange){el.classList.add('non-school','clickable');el.addEventListener('click',()=>openNonSchoolModal(dateObj,k));}
+      else el.classList.add('non-school');
+    }else{
+      const totalH=getEffectiveHours(dateObj,profile.anno,profile.indirizzo,data);
+      el.classList.add('school');
+      if(entry){
+        if(entry.type==='removed'){el.classList.add('day-removed');addDayBadge(el,'✕','var(--ink3)');}
+        else if(entry.type==='assembly-present'){el.classList.add('day-assembly-present');addDayBadge(el,'ASS','var(--green)');}
+        else if(entry.type==='assembly-absent'){el.classList.add('day-assembly-absent');addDayBadge(el,'ASS','var(--magenta)');}
+        else if(entry.type==='day'){
+          const absH=computeAbsence(entry,totalH);
+          const hasSchool=(entry.lateSchool||0)>0||(entry.earlySchool||0)>0;
+          const hasAbsence=absH>0;
+          if(hasAbsence){el.classList.add('day-absent');}
+          else if(hasSchool){el.classList.add('day-modified','has-school-mod');}
+          else{el.classList.add('day-modified');}
+          // badge riassuntivo
+          const parts=[];
+          if(entry.lateSchool)parts.push(`↑${entry.lateSchool}S`);
+          if(entry.earlySchool)parts.push(`↓${entry.earlySchool}S`);
+          if(entry.latePersonal)parts.push(`↑${entry.latePersonal}P`);
+          if(entry.earlyPersonal)parts.push(`↓${entry.earlyPersonal}P`);
+          if(entry.absentRemaining)parts.push(`✕`);
+          if(absH>0)parts.push(`${absH}h`);
+          if(parts.length>0)addDayBadge(el,parts.join(' '),hasAbsence?'var(--magenta)':hasSchool?'var(--cyan)':'var(--yellow)');
+        }
+      }else{
+        el.classList.add('school');
+        const hEl=document.createElement('div');
+        hEl.className='day-hours'; hEl.textContent=totalH+'h';
+        el.appendChild(hEl);
+        // Giorno passato senza modifiche → verde
+        if(dateObj<today&&!isToday) el.classList.add('day-past');
+      }
+      if(isToday)el.classList.add('today');
+      el.addEventListener('click',()=>openDayModal(dateObj,k,entry,false));
+    }
+    grid.appendChild(el);
+  }
+}
+function addDayBadge(parent,text,color){const b=document.createElement('div');b.className='day-hours';b.textContent=text;b.style.color=color;b.style.fontWeight='700';parent.appendChild(b);}
+
+// ================================================================
+//  MODAL — GIORNO NON SCOLASTICO
+// ================================================================
+function openNonSchoolModal(dateObj,k){
+  showModal();const mc=document.getElementById('modal-content');mc.innerHTML='';
+  const dayName=cap(dateObj.toLocaleDateString('it-IT',{weekday:'long',timeZone:'Europe/Rome'}));
+  appendBack(mc,()=>closeModal(),'✕ Chiudi');
+  appendTitle(mc,dayName+' '+dateObj.getDate(),dateObj.toLocaleDateString('it-IT',{day:'numeric',month:'long',year:'numeric',timeZone:'Europe/Rome'})+' — Giorno non scolastico');
+  const opts=document.createElement('div');opts.className='modal-options';
+  opts.appendChild(makeOpt('➕','green','Rendi scolastico','Scegli le ore e gestisci la giornata',()=>renderAddSchoolDayPicker(dateObj,k)));
+  mc.appendChild(opts);
+}
+function renderAddSchoolDayPicker(dateObj,k){
+  const mc=document.getElementById('modal-content');mc.innerHTML='';
+  appendBack(mc,()=>openNonSchoolModal(dateObj,k));
+  appendTitle(mc,'Rendi scolastico','Quante ore previste per questo giorno?');
+  let init=getHoursForDay(dateObj,profile.anno,profile.indirizzo)||4;if(init===0)init=4;
+  const{stepperEl,getVal}=makeStepperUI(init,1,10);mc.appendChild(stepperEl);
+  const hint=document.createElement('div');hint.className='hour-label';hint.textContent='Ore di lezione totali';mc.appendChild(hint);
+  const conf=document.createElement('button');conf.className='modal-confirm';conf.textContent='Aggiungi come scolastico';
+  conf.addEventListener('click',()=>{
+    // Salva subito e chiudi — il giorno diventa identico a uno scolastico normale
+    setEntry(k,{type:'added',hours:getVal(),absentHours:0});
+  });
+  mc.appendChild(conf);
+}
+
+function renderAddedDayEditor(dateObj,k,totalH){
+  const mc=document.getElementById('modal-content');mc.innerHTML='';
+  const dayName=cap(dateObj.toLocaleDateString('it-IT',{weekday:'long',timeZone:'Europe/Rome'}));
+  appendBack(mc,()=>renderAddSchoolDayPicker(dateObj,k));
+  appendTitle(mc,dayName+' '+dateObj.getDate(),'Ore totali: '+totalH+' — Imposta la giornata');
+  const existing=data[k];
+  const cur=(existing&&existing.dayMods)?{...existing.dayMods}:{lateSchool:0,earlySchool:0,latePersonal:0,earlyPersonal:0,absentRemaining:false};
+  const summaryEl=document.createElement('div');summaryEl.className='hours-summary';mc.appendChild(summaryEl);
+  function refreshSummary(){
+    const ls=cur.lateSchool||0,es=cur.earlySchool||0,lp=cur.latePersonal||0,ep=cur.earlyPersonal||0;
+    const nette=Math.max(0,totalH-ls-es);
+    const absH=lp+ep+(cur.absentRemaining?nette:0);
+    summaryEl.innerHTML=`
+      <div class="hs-row"><span class="hs-label">Ore totali</span><span class="hs-val">${totalH}</span></div>
+      ${ls>0?`<div class="hs-row"><span class="hs-label">− Entrata posticipata scuola</span><span class="hs-val">${ls}</span></div>`:''}
+      ${es>0?`<div class="hs-row"><span class="hs-label">− Uscita anticipata scuola</span><span class="hs-val">${es}</span></div>`:''}
+      <div class="hs-row"><span class="hs-label">Ore nette rimanenti</span><span class="hs-val">${nette}</span></div>
+      <div class="hs-row"><span class="hs-label">⚠ Ore assenza</span><span class="hs-val absent">${absH}</span></div>`;
+  }
+  refreshSummary();
+  mc.appendChild(makeSectionBlock('🏫 Entrata posticipata — Scuola',()=>{
+    const max=Math.max(0,totalH-(cur.earlySchool||0)-1);
+    const{stepperEl,getVal}=makeStepperUI(cur.lateSchool||0,0,max);
+    const hint=document.createElement('div');hint.className='hour-label';hint.textContent=`0 = nessuna  |  max ${max} ore`;
+    stepperEl.addEventListener('change-val',()=>{cur.lateSchool=getVal();refreshSummary();});
+    const wrap=document.createElement('div');wrap.appendChild(stepperEl);wrap.appendChild(hint);return{el:wrap};
+  }));
+  mc.appendChild(makeSectionBlock('🏫 Uscita anticipata — Scuola',()=>{
+    const max=Math.max(0,totalH-(cur.lateSchool||0)-1);
+    const{stepperEl,getVal}=makeStepperUI(cur.earlySchool||0,0,max);
+    const hint=document.createElement('div');hint.className='hour-label';hint.textContent=`0 = nessuna  |  max ${max} ore`;
+    stepperEl.addEventListener('change-val',()=>{cur.earlySchool=getVal();refreshSummary();});
+    const wrap=document.createElement('div');wrap.appendChild(stepperEl);wrap.appendChild(hint);return{el:wrap};
+  }));
+  mc.appendChild(makeSectionBlock('👤 Entrata posticipata — Personale (assenza)',()=>{
+    const nette=()=>Math.max(0,totalH-(cur.lateSchool||0)-(cur.earlySchool||0));
+    const{stepperEl,getVal}=makeStepperUI(cur.latePersonal||0,0,Math.max(0,nette()-(cur.earlyPersonal||0)));
+    const hint=document.createElement('div');hint.className='hour-label';hint.textContent='Ore di ritardo personale (→ assenza)';
+    stepperEl.addEventListener('change-val',()=>{cur.latePersonal=getVal();refreshSummary();});
+    const wrap=document.createElement('div');wrap.appendChild(stepperEl);wrap.appendChild(hint);return{el:wrap};
+  }));
+  mc.appendChild(makeSectionBlock('👤 Uscita anticipata — Personale (assenza)',()=>{
+    const nette=()=>Math.max(0,totalH-(cur.lateSchool||0)-(cur.earlySchool||0));
+    const{stepperEl,getVal}=makeStepperUI(cur.earlyPersonal||0,0,Math.max(0,nette()-(cur.latePersonal||0)));
+    const hint=document.createElement('div');hint.className='hour-label';hint.textContent='Ore di anticipo personale (→ assenza)';
+    stepperEl.addEventListener('change-val',()=>{cur.earlyPersonal=getVal();refreshSummary();});
+    const wrap=document.createElement('div');wrap.appendChild(stepperEl);wrap.appendChild(hint);return{el:wrap};
+  }));
+  mc.appendChild(makeCheckRow('✕ Assente nelle ore rimanenti','Le ore nette contano come assenza',cur.absentRemaining,val=>{cur.absentRemaining=val;refreshSummary();}));
+  const conf=document.createElement('button');conf.className='modal-confirm';conf.textContent='Salva giorno scolastico';
+  conf.addEventListener('click',()=>{
+    const ls=cur.lateSchool||0,es=cur.earlySchool||0,lp=cur.latePersonal||0,ep=cur.earlyPersonal||0;
+    if(ls+es>=totalH){alert('Entrata e uscita scuola non possono coprire tutte le ore.');return;}
+    const nette=Math.max(0,totalH-ls-es);
+    if(lp+ep>nette){alert('Le ore personali non possono superare le ore nette.');return;}
+    const absH=lp+ep+(cur.absentRemaining?nette:0);
+    setEntry(k,{type:'added',hours:totalH,absentHours:absH,dayMods:cur});
+  });
+  mc.appendChild(conf);
+  mc.appendChild(makeSep());
+  const removeBtn=makeOpt('↩','gray','Rimuovi giorno scolastico','Torna a giorno non scolastico',()=>removeEntry(k),true);
+  mc.appendChild(removeBtn);
+}
+
+// ================================================================
+//  MODAL — GIORNO SCOLASTICO
+// ================================================================
+function openDayModal(dateObj,k,entry,isAdded){
+  showModal();
+  const totalH=getEffectiveHours(dateObj,profile.anno,profile.indirizzo,data);
+  renderDayMenu(dateObj,k,entry,totalH,isAdded);
+}
+
+function renderDayMenu(dateObj,k,entry,totalH,isAdded){
+  const mc=document.getElementById('modal-content');mc.innerHTML='';
+  const dayName=cap(dateObj.toLocaleDateString('it-IT',{weekday:'long',timeZone:'Europe/Rome'}));
+  const dateStr=dateObj.toLocaleDateString('it-IT',{day:'numeric',month:'long',year:'numeric',timeZone:'Europe/Rome'});
+  // Tasto chiudi in cima
+  appendBack(mc,()=>closeModal(),'✕ Chiudi');
+  appendTitle(mc,dayName+' '+dateObj.getDate(),dateStr+' — '+totalH+' ore previste');
+
+  const opts=document.createElement('div');opts.className='modal-options';
+
+  if(entry&&entry.type==='removed'){
+    opts.appendChild(makeOpt('↩','gray','Ripristina giorno scolastico','',()=>removeEntry(k)));
+    mc.appendChild(opts);return;
+  }
+  if(isAdded){
+    // Stesso menu del giorno normale, con in più l'opzione di rimozione
+    // Assenza intera
+    opts.appendChild(makeOpt('✕','magenta','Assenza intera','Tutta la giornata — '+totalH+' ore',()=>{
+      setEntry(k,{type:'added',hours:totalH,absentHours:totalH,dayMods:{lateSchool:0,earlySchool:0,latePersonal:0,earlyPersonal:0,absentRemaining:true}});
+    }));
+    // Modifica giornata (editor completo)
+    opts.appendChild(makeOpt('📝','cyan','Modifica giornata','Entrate/uscite, assenze, note',()=>renderAddedDayEditor(dateObj,k,totalH)));
+    // Assemblea
+    opts.appendChild(makeOpt('📢','green','Assemblea di Istituto','3 ore — scegli partecipazione',()=>renderAssemblyPicker(k,dateObj.toLocaleDateString('it-IT',{day:'numeric',month:'long',year:'numeric',timeZone:'Europe/Rome'}),totalH)));
+    // Modifica ore base
+    opts.appendChild(makeOpt('🔢','gray','Cambia ore totali','Modifica il numero di ore di questo giorno',()=>renderAddSchoolDayPicker(dateObj,k)));
+    if(data[k]&&data[k].dayMods){opts.appendChild(makeSep());opts.appendChild(makeOpt('↩','gray','Ripristina giorno normale','Rimuovi modifiche orario',()=>{setEntry(k,{type:'added',hours:totalH,absentHours:0});},true));}
+    opts.appendChild(makeSep());
+    opts.appendChild(makeOpt('✕','gray','Rimuovi giorno scolastico','Torna a giorno non scolastico',()=>removeEntry(k),true));
+    mc.appendChild(opts);return;
+  }
+
+  // Pulsante principale: "Modifica giornata" → apre il pannello completo
+  opts.appendChild(makeOpt('📝','cyan','Modifica giornata','Entrate/uscite, assenze, note',()=>renderDayEditor(dateObj,k,entry,totalH)));
+
+  // Scorciatoie rapide
+  opts.appendChild(makeOpt('✕','magenta','Assenza intera','Tutta la giornata — '+totalH+' ore',()=>{
+    setEntry(k,{type:'day',lateSchool:0,earlySchool:0,latePersonal:0,earlyPersonal:0,absentRemaining:true});
+  }));
+  opts.appendChild(makeOpt('⏱','orange','Ritardo',`Registra un ritardo (0–59 min)`,()=>renderDelayPicker(dateObj,k,entry,totalH,dateStr)));
+  opts.appendChild(makeOpt('⚠','gray','Rimuovi giornata','Allerte meteo, Elezioni…',()=>setEntry(k,{type:'removed',hours:0})));
+  opts.appendChild(makeOpt('📢','green','Assemblea di Istituto','3 ore — scegli partecipazione',()=>renderAssemblyPicker(k,dateStr,totalH)));
+  opts.appendChild(makeOpt('🕐','gray','Cambia orario giornata','Orario provvisorio, casi rari',()=>renderChangeSchedulePicker(dateObj,k,entry,totalH,dateStr)));
+
+  if(entry){opts.appendChild(makeSep());opts.appendChild(makeOpt('↩','gray','Ripristina giorno normale','Rimuovi tutte le modifiche',()=>removeEntry(k),true));}
+  mc.appendChild(opts);
+}
+
+// ================================================================
+//  CAMBIA ORARIO GIORNATA (orario provvisorio)
+// ================================================================
+function renderChangeSchedulePicker(dateObj,k,entry,totalH,dateStr){
+  const mc=document.getElementById('modal-content');mc.innerHTML='';
+  const dayName=cap(dateObj.toLocaleDateString('it-IT',{weekday:'long',timeZone:'Europe/Rome'}));
+  appendBack(mc,()=>renderDayMenu(dateObj,k,data[k]||null,totalH,false));
+  appendTitle(mc,'🕐 Cambia orario giornata','Orario provvisorio — es. solo 4 ore per decisione della scuola');
+
+  // Ore attuali personalizzate o quelle standard
+  const existing=data[k];
+  const currentCustomH=(existing&&existing.type==='day'&&existing.customTotalH)||null;
+  let newH=currentCustomH||totalH;
+
+  const{stepperEl,getVal}=makeStepperUI(newH,1,10);
+  mc.appendChild(stepperEl);
+
+  const hint=document.createElement('div');hint.className='hour-label';
+  hint.textContent=`Ore standard: ${totalH}h  ·  Modifica solo per oggi`;
+  mc.appendChild(hint);
+
+  // Info
+  const info=document.createElement('div');
+  info.style.cssText='background:var(--cyan-soft);border:1px solid var(--cyan);border-radius:var(--radius-sm);padding:.6rem .75rem;font-size:.75rem;color:var(--ink2);margin:.75rem 0;';
+  info.textContent='Le ore cambiate influenzano il calcolo assenze di questo giorno. Non conta come assenza di per sé.';
+  mc.appendChild(info);
+
+  const conf=document.createElement('button');conf.className='modal-confirm';conf.textContent='Applica orario';
+  conf.addEventListener('click',()=>{
+    const h=getVal();
+    const base=(existing&&existing.type==='day')?{...existing}:{type:'day',lateSchool:0,earlySchool:0,latePersonal:0,earlyPersonal:0,absentRemaining:false};
+    if(h===totalH){
+      // Rimuovi personalizzazione se uguale allo standard
+      delete base.customTotalH;
+    }else{
+      base.customTotalH=h;
+    }
+    setEntry(k,base);
+  });
+  mc.appendChild(conf);
+
+  if(currentCustomH){
+    mc.appendChild(makeSep());
+    mc.appendChild(makeOpt('↩','gray','Ripristina orario standard',`Torna a ${totalH} ore`,()=>{
+      const base=(existing&&existing.type==='day')?{...existing}:{type:'day',lateSchool:0,earlySchool:0,latePersonal:0,earlyPersonal:0,absentRemaining:false};
+      delete base.customTotalH;
+      setEntry(k,base);
+    },true));
+  }
+}
+
+// ================================================================
+//  PICKER RITARDO
+// ================================================================
+function renderDelayPicker(dateObj,k,entry,totalH,dateStr){
+  const mc=document.getElementById('modal-content');mc.innerHTML='';
+  const dayName=cap(dateObj.toLocaleDateString('it-IT',{weekday:'long',timeZone:'Europe/Rome'}));
+  appendBack(mc,()=>renderDayMenu(dateObj,k,data[k]||null,totalH,false));
+  appendTitle(mc,'⏱ Ritardo','Quanti minuti di ritardo?');
+
+  // Prendi il valore esistente se c'è
+  const existing=data[k];
+  let minVal=(existing&&existing.type==='day'&&existing.delayMinutes)||0;
+
+  const row=document.createElement('div');
+  row.style.cssText='display:flex;align-items:center;gap:1rem;justify-content:center;margin:1.5rem 0;';
+  const minus=document.createElement('button');minus.type='button';
+  minus.style.cssText='width:42px;height:42px;border-radius:50%;background:var(--bg3);border:1.5px solid var(--border);font-size:1.5rem;font-weight:700;display:flex;align-items:center;justify-content:center;cursor:pointer;';
+  minus.textContent='−';
+  const valEl=document.createElement('div');
+  valEl.style.cssText='font-family:Space Mono,monospace;font-size:2.2rem;font-weight:700;min-width:3ch;text-align:center;';
+  valEl.textContent=minVal;
+  const plus=document.createElement('button');plus.type='button';
+  plus.style.cssText=minus.style.cssText;
+  plus.textContent='+';
+  const unit=document.createElement('div');
+  unit.style.cssText='font-size:.8rem;color:var(--ink3);text-align:center;margin-top:.25rem;font-family:Space Mono,monospace;';
+  unit.textContent='min';
+
+  minus.addEventListener('click',()=>{if(minVal>0){minVal=Math.max(0,minVal-5);valEl.textContent=minVal;}});
+  plus.addEventListener('click',()=>{if(minVal<59){minVal=Math.min(59,minVal+5);valEl.textContent=minVal;}});
+  row.appendChild(minus);row.appendChild(valEl);row.appendChild(plus);
+
+  const hint=document.createElement('div');
+  hint.className='hour-hint';
+  hint.textContent='Step di 5 minuti  ·  Non conta come ora di assenza';
+  mc.appendChild(row);mc.appendChild(unit);mc.appendChild(hint);
+
+  const conf=document.createElement('button');conf.className='modal-confirm';conf.textContent='Salva ritardo';
+  conf.addEventListener('click',()=>{
+    // Merge con entry esistente o crea nuova
+    const base=(existing&&existing.type==='day')?{...existing}:{type:'day',lateSchool:0,earlySchool:0,latePersonal:0,earlyPersonal:0,absentRemaining:false};
+    if(minVal===0){
+      // Rimuovi il ritardo
+      delete base.delayMinutes;
+      // Se non c'è altro, rimuovi l'entry
+      const{delayMinutes,...rest}=base;
+      const hasOther=rest.lateSchool||rest.earlySchool||rest.latePersonal||rest.earlyPersonal||rest.absentRemaining||rest.lateSchoolAsAbsent||rest.earlySchoolAsAbsent;
+      if(!hasOther){removeEntry(k);return;}
+      setEntry(k,rest);
+    }else{
+      base.delayMinutes=minVal;
+      setEntry(k,base);
+    }
+  });
+  mc.appendChild(conf);
+}
+
+// ================================================================
+//  EDITOR GIORNO — pannello completo
+// ================================================================
+function renderDayEditor(dateObj,k,entry,totalH){
+  const mc=document.getElementById('modal-content');mc.innerHTML='';
+  const dayName=cap(dateObj.toLocaleDateString('it-IT',{weekday:'long',timeZone:'Europe/Rome'}));
+
+  // Stato corrente
+  const cur=entry&&entry.type==='day'?{...entry}:{type:'day',lateSchool:0,earlySchool:0,latePersonal:0,earlyPersonal:0,absentRemaining:false};
+
+  appendBack(mc,()=>renderDayMenu(dateObj,k,data[k]||null,totalH,false));
+  appendTitle(mc,dayName+' '+dateObj.getDate(),'Ore totali previste: '+totalH);
+
+  // ---- RIEPILOGO LIVE ----
+  const summaryEl=document.createElement('div');summaryEl.className='hours-summary';
+  mc.appendChild(summaryEl);
+
+  function refreshSummary(){
+    const ls=cur.lateSchool||0,es=cur.earlySchool||0;
+    const lp=cur.latePersonal||0,ep=cur.earlyPersonal||0;
+    const lsAbs=cur.lateSchoolAsAbsent?ls:0;
+    const esAbs=cur.earlySchoolAsAbsent?es:0;
+    const nette=Math.max(0,totalH-ls-es);
+    const absH=lp+ep+lsAbs+esAbs+(cur.absentRemaining?nette:0);
+    const dm=cur.delayMinutes||0;
+    const lsMin=cur.lateSchoolAsAbsent?(cur.lateSchoolMinutes||0):0;
+    const esMin=cur.earlySchoolAsAbsent?(cur.earlySchoolMinutes||0):0;
+    const totalAbsMin=lsMin+esMin;
+    summaryEl.innerHTML=`
+      <div class="hs-row"><span class="hs-label">Ore totali</span><span class="hs-val">${totalH}</span></div>
+      ${ls>0?`<div class="hs-row"><span class="hs-label">− Entrata posticipata scuola</span><span class="hs-val">${ls}${lsAbs>0?' ⚠':''}h${lsMin>0?' +'+lsMin+'min':''}</span></div>`:''}
+      ${es>0?`<div class="hs-row"><span class="hs-label">− Uscita anticipata scuola</span><span class="hs-val">${es}${esAbs>0?' ⚠':''}h${esMin>0?' +'+esMin+'min':''}</span></div>`:''}
+      <div class="hs-row"><span class="hs-label">Ore nette rimanenti</span><span class="hs-val">${nette}</span></div>
+      ${dm>0?`<div class="hs-row"><span class="hs-label">⏱ Ritardo registrato</span><span class="hs-val">${dm} min</span></div>`:''}
+      ${totalAbsMin>0?`<div class="hs-row"><span class="hs-label">⏱ Min. assenza (ritardo scuola)</span><span class="hs-val absent">${totalAbsMin} min</span></div>`:''}
+      <div class="hs-row"><span class="hs-label">⚠ Ore assenza</span><span class="hs-val absent">${absH}</span></div>`;
+  }
+  refreshSummary();
+
+  // ---- SEZIONE: ENTRATA POSTICIPATA (unica voce con sotto-opzioni) ----
+  mc.appendChild(makeSectionBlock('↑ Entrata posticipata', ()=>{
+    const wrap=document.createElement('div');
+
+    // Sotto-opzione 1: PERSONALE
+    const titleP=document.createElement('div');titleP.className='modal-section-title';titleP.style.marginBottom='.4rem';titleP.textContent='👤 Personale (conta come assenza)';
+    const netteP=()=>Math.max(0,totalH-(cur.lateSchool||0)-(cur.earlySchool||0));
+    const{stepperEl:spP,getVal:gvP}=makeStepperUI(cur.latePersonal||0,0,Math.max(0,netteP()-(cur.earlyPersonal||0)));
+    const hintP=document.createElement('div');hintP.className='hour-label';hintP.textContent='Ore di ritardo personale → assenza';
+    spP.addEventListener('change-val',()=>{cur.latePersonal=gvP();refreshSummary();});
+
+    // Separatore
+    const sep=document.createElement('div');sep.style.cssText='height:1px;background:var(--border);margin:.75rem 0;';
+
+    // Sotto-opzione 2: DECISA DALLA SCUOLA
+    const titleS=document.createElement('div');titleS.className='modal-section-title';titleS.style.marginBottom='.4rem';titleS.textContent='🏫 Decisa dalla scuola';
+    const maxS=Math.max(0,totalH-(cur.earlySchool||0)-1);
+    const{stepperEl:spS,getVal:gvS}=makeStepperUI(cur.lateSchool||0,0,maxS);
+    const hintS=document.createElement('div');hintS.className='hour-label';hintS.textContent=`0 = nessuna  |  max ${maxS} ore`;
+    spS.addEventListener('change-val',()=>{cur.lateSchool=gvS();refreshSummary();});
+    // Checkbox con mini picker minuti
+    const togSWrap=document.createElement('div');
+    const togS=makeCheckRow('↑ Entro comunque in ritardo rispetto all\'orario','Attiva per aggiungere i minuti di assenza',cur.lateSchoolAsAbsent||false,val=>{
+      cur.lateSchoolAsAbsent=val;
+      minPickerLS.style.display=val?'flex':'none';
+      refreshSummary();
+    });
+    const minPickerLS=makeMinutePicker(cur.lateSchoolMinutes||0,v=>{cur.lateSchoolMinutes=v;refreshSummary();});
+    minPickerLS.style.display=(cur.lateSchoolAsAbsent)?'flex':'none';
+    togSWrap.appendChild(togS);togSWrap.appendChild(minPickerLS);
+
+    wrap.appendChild(titleP);wrap.appendChild(spP);wrap.appendChild(hintP);
+    wrap.appendChild(sep);
+    wrap.appendChild(titleS);wrap.appendChild(spS);wrap.appendChild(hintS);wrap.appendChild(togSWrap);
+    return{el:wrap};
+  }));
+
+  // ---- SEZIONE: USCITA ANTICIPATA (unica voce con sotto-opzioni) ----
+  mc.appendChild(makeSectionBlock('↓ Uscita anticipata', ()=>{
+    const wrap=document.createElement('div');
+
+    // Sotto-opzione 1: PERSONALE
+    const titleP=document.createElement('div');titleP.className='modal-section-title';titleP.style.marginBottom='.4rem';titleP.textContent='👤 Personale (conta come assenza)';
+    const netteP=()=>Math.max(0,totalH-(cur.lateSchool||0)-(cur.earlySchool||0));
+    const{stepperEl:spP,getVal:gvP}=makeStepperUI(cur.earlyPersonal||0,0,Math.max(0,netteP()-(cur.latePersonal||0)));
+    const hintP=document.createElement('div');hintP.className='hour-label';hintP.textContent='Ore di anticipo personale → assenza';
+    spP.addEventListener('change-val',()=>{cur.earlyPersonal=gvP();refreshSummary();});
+
+    // Separatore
+    const sep=document.createElement('div');sep.style.cssText='height:1px;background:var(--border);margin:.75rem 0;';
+
+    // Sotto-opzione 2: DECISA DALLA SCUOLA
+    const titleS=document.createElement('div');titleS.className='modal-section-title';titleS.style.marginBottom='.4rem';titleS.textContent='🏫 Decisa dalla scuola';
+    const maxS=Math.max(0,totalH-(cur.lateSchool||0)-1);
+    const{stepperEl:spS,getVal:gvS}=makeStepperUI(cur.earlySchool||0,0,maxS);
+    const hintS=document.createElement('div');hintS.className='hour-label';hintS.textContent=`0 = nessuna  |  max ${maxS} ore`;
+    spS.addEventListener('change-val',()=>{cur.earlySchool=gvS();refreshSummary();});
+    // Checkbox con mini picker minuti
+    const togSWrap=document.createElement('div');
+    const togS=makeCheckRow('↓ Mi faccio prendere prima dell\'orario','Attiva per aggiungere i minuti di assenza',cur.earlySchoolAsAbsent||false,val=>{
+      cur.earlySchoolAsAbsent=val;
+      minPickerES.style.display=val?'flex':'none';
+      refreshSummary();
+    });
+    const minPickerES=makeMinutePicker(cur.earlySchoolMinutes||0,v=>{cur.earlySchoolMinutes=v;refreshSummary();});
+    minPickerES.style.display=(cur.earlySchoolAsAbsent)?'flex':'none';
+    togSWrap.appendChild(togS);togSWrap.appendChild(minPickerES);
+
+    wrap.appendChild(titleP);wrap.appendChild(spP);wrap.appendChild(hintP);
+    wrap.appendChild(sep);
+    wrap.appendChild(titleS);wrap.appendChild(spS);wrap.appendChild(hintS);wrap.appendChild(togSWrap);
+    return{el:wrap};
+  }));
+
+  // ---- ASSENTE nelle ore nette rimanenti ----
+  const absentCheck=makeCheckRow(
+    '✕ Assente nelle ore rimanenti',
+    'Le ore nette (dopo entrata/uscita scuola) contano come assenza',
+    cur.absentRemaining,
+    val=>{cur.absentRemaining=val;refreshSummary();}
+  );
+  mc.appendChild(absentCheck);
+
+  // ---- FUNZIONE DI RICALCOLO MASSIMI (cross-field) ----
+  // Memorizza riferimenti agli stepper per aggiornarli
+  const stepperRefs=[];
+  function recalcMaxes(){
+    // Ricavati dal DOM: troppo complesso, refreshiamo il summary
+    refreshSummary();
+  }
+
+  // ---- CONFERMA ----
+  const conf=document.createElement('button');conf.className='modal-confirm';conf.textContent='Salva modifiche';
+  conf.addEventListener('click',()=>{
+    // Controlla che tutto sia valido
+    const ls=cur.lateSchool||0,es=cur.earlySchool||0,lp=cur.latePersonal||0,ep=cur.earlyPersonal||0;
+    if(ls+es>=totalH){alert('Entrata e uscita scuola non possono coprire tutte le ore.');return;}
+    const nette=Math.max(0,totalH-ls-es);
+    if(lp+ep>nette){alert('Le ore personali non possono superare le ore nette.');return;}
+    // Se tutto è zero e absentRemaining=false → rimuovi entry
+    if(ls===0&&es===0&&lp===0&&ep===0&&!cur.absentRemaining){removeEntry(k);return;}
+    setEntry(k,cur);
+  });
+  mc.appendChild(conf);
+}
+
+// ================================================================
+//  ASSEMBLEA
+// ================================================================
+function renderAssemblyPicker(k,dateStr,totalH){
+  const mc=document.getElementById('modal-content');mc.innerHTML='';
+  const dateObj=parseKey(k);
+  appendBack(mc,()=>renderDayMenu(dateObj,k,data[k]||null,totalH,false));
+  appendTitle(mc,'Assemblea di Istituto','3 ore totali — scegli la tua partecipazione');
+  const opts=document.createElement('div');opts.className='modal-options';
+  opts.appendChild(makeOpt('✓','green','Partecipazione','0 ore di assenza, 3 ore nel monte ore',()=>setEntry(k,{type:'assembly-present',hours:0})));
+  opts.appendChild(makeOpt('✕','magenta','Assenza','3 ore di assenza',()=>setEntry(k,{type:'assembly-absent',hours:3})));
+  mc.appendChild(opts);
+}
+
+// ================================================================
+//  HELPERS UI
+// ================================================================
+function showModal(){document.getElementById('modal-overlay').classList.remove('hidden');}
+function closeModal(){document.getElementById('modal-overlay').classList.add('hidden');document.getElementById('modal-content').innerHTML='';}
+
+function appendTitle(parent,title,subtitle){
+  const t=document.createElement('div');t.className='modal-title';t.textContent=title;parent.appendChild(t);
+  if(subtitle){const s=document.createElement('div');s.className='modal-subtitle';s.textContent=subtitle;parent.appendChild(s);}
+}
+function appendBack(parent,fn,label='← Indietro'){
+  const b=document.createElement('div');b.className='modal-back';b.innerHTML=label;b.addEventListener('click',fn);parent.appendChild(b);
+}
+function makeSep(){const s=document.createElement('div');s.style.cssText='height:1px;background:var(--border);margin:.3rem 0;';return s;}
+
+function makeOpt(icon,color,title,desc,action,isDanger=false){
+  const btn=document.createElement('button');btn.className='modal-option'+(isDanger?' danger':'');
+  const iconEl=document.createElement('div');iconEl.className=`opt-icon ${color}`;iconEl.textContent=icon;
+  const textEl=document.createElement('div');textEl.className='opt-text';
+  const t=document.createElement('div');t.textContent=title;textEl.appendChild(t);
+  if(desc){const d=document.createElement('div');d.className='opt-desc';d.textContent=desc;textEl.appendChild(d);}
+  btn.appendChild(iconEl);btn.appendChild(textEl);btn.addEventListener('click',action);return btn;
+}
+
+function makeSectionBlock(title,buildFn){
+  const sec=document.createElement('div');sec.className='modal-section';
+  const tEl=document.createElement('div');tEl.className='modal-section-title';tEl.textContent=title;sec.appendChild(tEl);
+  const{el}=buildFn();sec.appendChild(el);return sec;
+}
+
+function makeMinutePicker(initVal,onChange){
+  const wrap=document.createElement('div');
+  wrap.style.cssText='display:flex;align-items:center;gap:.6rem;padding:.5rem .75rem;background:var(--bg2);border-radius:var(--radius-sm);border:1.5px solid var(--border);margin-top:.4rem;';
+  const lbl=document.createElement('div');lbl.style.cssText='font-size:.75rem;color:var(--ink3);flex:1;';lbl.textContent='Minuti di assenza:';
+  const minus=document.createElement('button');minus.type='button';
+  minus.style.cssText='width:30px;height:30px;border-radius:50%;background:var(--bg3);border:1px solid var(--border);font-size:1.1rem;font-weight:700;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;';
+  minus.textContent='−';
+  let val=initVal||0;
+  const valEl=document.createElement('div');
+  valEl.style.cssText='font-family:Space Mono,monospace;font-size:1.1rem;font-weight:700;min-width:2.5ch;text-align:center;';
+  valEl.textContent=val;
+  const plus=document.createElement('button');plus.type='button';plus.style.cssText=minus.style.cssText;plus.textContent='+';
+  minus.addEventListener('click',()=>{if(val>0){val=Math.max(0,val-5);valEl.textContent=val;onChange(val);}});
+  plus.addEventListener('click',()=>{if(val<59){val=Math.min(59,val+5);valEl.textContent=val;onChange(val);}});
+  const unit=document.createElement('div');unit.style.cssText='font-size:.72rem;color:var(--ink3);font-family:Space Mono,monospace;';unit.textContent='min';
+  wrap.appendChild(lbl);wrap.appendChild(minus);wrap.appendChild(valEl);wrap.appendChild(plus);wrap.appendChild(unit);
+  return wrap;
+}
+
+function makeStepperUI(initVal,minVal,maxVal){
+  const wrap=document.createElement('div');wrap.className='hour-stepper';
+  let val=clamp(initVal,minVal,maxVal),curMax=maxVal;
+  const minus=document.createElement('button');minus.textContent='−';minus.type='button';
+  const valEl=document.createElement('div');valEl.className='hour-val';valEl.textContent=val;
+  const plus=document.createElement('button');plus.textContent='+';plus.type='button';
+  function update(){
+    valEl.textContent=val;
+    minus.disabled=val<=minVal;
+    plus.disabled=val>=curMax;
+    wrap.dispatchEvent(new Event('change-val'));
+  }
+  minus.addEventListener('click',()=>{if(val>minVal){val--;update();}});
+  plus.addEventListener('click',()=>{if(val<curMax){val++;update();}});
+  wrap.appendChild(minus);wrap.appendChild(valEl);wrap.appendChild(plus);
+  update();
+  return{stepperEl:wrap,getVal:()=>val,setVal:v=>{val=clamp(v,minVal,curMax);update();},setMax:mx=>{curMax=mx;if(val>curMax){val=curMax;update();}}};
+}
+
+function makeCheckRow(label,desc,initial,onChange){
+  const row=document.createElement('div');row.className='check-row'+(initial?' active':'');
+  const box=document.createElement('div');box.className='check-box';box.textContent=initial?'✓':'';
+  const textWrap=document.createElement('div');
+  const lEl=document.createElement('div');lEl.className='check-label';lEl.textContent=label;
+  const dEl=document.createElement('div');dEl.className='check-desc';dEl.textContent=desc;
+  textWrap.appendChild(lEl);textWrap.appendChild(dEl);
+  row.appendChild(box);row.appendChild(textWrap);
+  let state=initial;
+  row.addEventListener('click',()=>{state=!state;row.classList.toggle('active',state);box.textContent=state?'✓':'';onChange(state);});
+  return row;
+}
+
+// ================================================================
+//  GESTIONE DATI
+// ================================================================
+function setEntry(k,entry){data[k]=entry;saveData(data);updateStats();renderCalendar(currentMonthIdx);renderLog();closeModal();}
+function removeEntry(k){delete data[k];saveData(data);updateStats();renderCalendar(currentMonthIdx);renderLog();closeModal();}
+
+// ================================================================
+//  LOG
+// ================================================================
+function entryLabel(entry,totalH){
+  if(!entry)return{label:'—',color:'var(--ink3)',detail:''};
+  switch(entry.type){
+    case 'removed':   return{label:'Giorno rimosso',color:'var(--ink3)',detail:'Giorno non scolastico'};
+    case 'added':     return{label:'Giorno aggiunto',color:'var(--green)',detail:`${entry.hours} ore aggiunte`};
+    case 'assembly-present':return{label:'Assemblea — Presente',color:'var(--green)',detail:'3 ore, 0h assenza'};
+    case 'assembly-absent': return{label:'Assemblea — Assente', color:'var(--magenta)',detail:'3h assenza'};
+    case 'day':{
+      const ls=entry.lateSchool||0,es=entry.earlySchool||0,lp=entry.latePersonal||0,ep=entry.earlyPersonal||0;
+      const lsAbs=entry.lateSchoolAsAbsent?ls:0, esAbs=entry.earlySchoolAsAbsent?es:0;
+      const nette=Math.max(0,totalH-ls-es);
+      const absH=lp+ep+lsAbs+esAbs+(entry.absentRemaining?nette:0);
+      const dm=entry.delayMinutes||0;
+      const parts=[];
+      if(ls)parts.push(`Entrata +${ls}h scuola${lsAbs?' (→ass)':''}`);
+      if(es)parts.push(`Uscita −${es}h scuola${esAbs?' (→ass)':''}`);
+      if(lp)parts.push(`Entrata +${lp}h pers.`);
+      if(ep)parts.push(`Uscita −${ep}h pers.`);
+      if(entry.absentRemaining)parts.push(`Assente ${nette}h nette`);
+      if(dm>0)parts.push(`Ritardo ${dm}min`);
+      const color=absH>0?'var(--magenta)':(ls||es)?'var(--cyan)':'var(--yellow)';
+      const label=absH>0?`Assenza ${absH}h`:(ls||es)?'Mod. orario scuola':dm>0?`Ritardo ${dm}min`:'Mod. orario pers.';
+      return{label,color,detail:parts.join(' · ')||`${absH}h assenza`};
+    }
+    default: return{label:entry.type,color:'var(--ink3)',detail:''};
+  }
+}
+
+function renderLog(){
+  const list=document.getElementById('log-list');list.innerHTML='';
+  const keys=Object.keys(data).sort();
+  if(keys.length===0){const e=document.createElement('div');e.className='log-empty';e.textContent='Nessuna modifica registrata';list.appendChild(e);return;}
+  for(let i=keys.length-1;i>=0;i--){
+    const k=keys[i],entry=data[k];
+    const dateObj=parseKey(k);
+    const totalH=getEffectiveHours(dateObj,profile.anno,profile.indirizzo,data);
+    const{label,color,detail}=entryLabel(entry,totalH);
+    const dateStr=dateObj.toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit',timeZone:'Europe/Rome'});
+    const item=document.createElement('div');item.className='log-item';
+    const dot=document.createElement('div');dot.className='log-dot';dot.style.background=color;
+    const date=document.createElement('div');date.className='log-date';date.textContent=dateStr;
+    const body=document.createElement('div');body.className='log-body';
+    const type=document.createElement('div');type.className='log-type';type.textContent=label;
+    const hrs=document.createElement('div');hrs.className='log-hours';hrs.textContent=detail;
+    body.appendChild(type);body.appendChild(hrs);
+    const del=document.createElement('button');del.className='log-del';del.textContent='✕';del.setAttribute('aria-label','Elimina');
+    del.addEventListener('click',()=>removeEntry(k));
+    item.appendChild(dot);item.appendChild(date);item.appendChild(body);item.appendChild(del);
+    list.appendChild(item);
+  }
+}
+
+// ================================================================
+//  INIT
+// ================================================================
+(function init(){
+  initOnboarding();
+  const saved=loadProfile();
+  if(saved&&saved.name&&saved.anno){profile=saved;document.getElementById('onboarding').classList.add('hidden');startApp();}
+})();
+</script>
+</body>
+</html>
