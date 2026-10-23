@@ -4,6 +4,6 @@ Quest'app è prettamente destinata agli alunni dell'istituto Rizza-Insolera A.S.
 
 --------------------------------------------------------------------------------------------------------------------------------------------
 
-🌍 Sito:
+🌍 Sito: https://mattimoscu1.github.io/registro-assenze./
 
 <img width="1002" height="2048" alt="image" src="https://github.com/user-attachments/assets/6d966f7e-31eb-4ca3-b8ed-b957b84c3670" />
